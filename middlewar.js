@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 export const runtime = 'experimental-edge';
-export async function proxy(request) {
+export async function middleware(request) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -31,6 +31,7 @@ export async function proxy(request) {
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
+
   return response
 }
 export const config = {
