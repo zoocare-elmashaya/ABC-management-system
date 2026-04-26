@@ -1,5 +1,7 @@
-export default {
+const config = {
     default: {
         runtime: "edge",
     },
 };
+
+export default config;
