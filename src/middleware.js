@@ -1,10 +1,10 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
-// Update this line exactly as shown below:
+// Keep this as is - Next.js 16 on Cloudflare needs this specific string
 export const runtime = 'experimental-edge'; 
 
-export async function proxy(request) {
+export async function middleware(request) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -30,7 +30,7 @@ export async function proxy(request) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Redirect if no user and not on login
+  // Redirect logic
   if (!user && !request.nextUrl.pathname.startsWith('/login')) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
@@ -42,6 +42,11 @@ export async function proxy(request) {
 
 export const config = {
   matcher: [
+    /*
+     * Match all request paths except for:
+     * - _next/static, _next/image, favicon.ico
+     * - common image extensions
+     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
