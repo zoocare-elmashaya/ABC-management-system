@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "npx opennextjs-cloudflare",
-    "start": "next start",
-    "lint": "next lint",
-    "deploy": "npx opennextjs-cloudflare deploy"
+  "dev": "next dev",
+  "build": "npx opennextjs-cloudflare build",
+  "start": "next start",
+  "lint": "next lint",
+  "deploy": "npx opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
