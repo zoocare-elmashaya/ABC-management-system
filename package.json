@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx opennextjs-cloudflare build",
+    "build": "next build",
+    "build:cloudflare": "opennextjs-cloudflare build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "npx opennextjs-cloudflare deploy"
+    "deploy": "opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
