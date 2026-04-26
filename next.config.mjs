@@ -9,8 +9,9 @@ const withPWA = withPWAInit({
 const nextConfig = {
   reactStrictMode: true,
   turbopack: {}, 
-  experimental: {
-  }
+  webpack: (config) => {
+    return config;
+  },
 };
 
 export default withPWA(nextConfig);
