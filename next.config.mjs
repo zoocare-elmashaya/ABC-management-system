@@ -5,7 +5,6 @@ const withPWA = withPWAInit({
   register: true,
   skipWaiting: true,
 });
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
