@@ -1,5 +1,4 @@
 import withPWAInit from 'next-pwa';
-
 const withPWA = withPWAInit({
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
@@ -10,6 +9,7 @@ const withPWA = withPWAInit({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  turbopack: {}, 
   experimental: {
   }
 };
