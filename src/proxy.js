@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
-export const runtime = 'edge';
-export async function middleware(request) {
+export const runtime = 'experimental-edge';
+export async function proxy(request) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
