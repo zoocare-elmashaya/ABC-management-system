@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
-export const runtime = 'experimental-edge';
+export const runtime = 'edge';
 export async function middleware(request) {
   let response = NextResponse.next({
     request: {
@@ -18,6 +18,7 @@ export async function middleware(request) {
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
             request.cookies.set(name, value)
+            // Re-assigning response to ensure cookies are carried forward
             response = NextResponse.next({ request })
             response.cookies.set(name, value, options)
           })
@@ -29,13 +30,16 @@ export async function middleware(request) {
   if (!user && !request.nextUrl.pathname.startsWith('/login')) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    return NextResponse.redirect(url)
+    const redirectResponse = NextResponse.redirect(url)
+    response.cookies.getAll().forEach((cookie) => {
+        redirectResponse.cookies.set(cookie.name, cookie.value);
+    });
+    return redirectResponse
   }
-
   return response
 }
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
