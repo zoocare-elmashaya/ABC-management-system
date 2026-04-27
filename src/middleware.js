@@ -1,6 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
-
 export const runtime = 'experimental-edge';
 export async function middleware(request) {
   let response = NextResponse.next({
@@ -13,21 +12,35 @@ export async function middleware(request) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
-        getAll() { return request.cookies.getAll() },
+        getAll() {
+          return request.cookies.getAll()
+        },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set(name, value)
-            response = NextResponse.next({ request })
-            response.cookies.set(name, value, options)
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          response = NextResponse.next({
+            request,
           })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          )
         },
       },
     }
   )
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user && !request.nextUrl.pathname.startsWith('/login')) {
+  const isLoginPage = request.nextUrl.pathname.startsWith('/login')
+  if (!user && !isLoginPage) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
+    const redirectResponse = NextResponse.redirect(url)
+    response.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value)
+    })
+    return redirectResponse
+  }
+  if (user && isLoginPage) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/' 
     return NextResponse.redirect(url)
   }
   return response
