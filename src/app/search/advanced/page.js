@@ -3,21 +3,30 @@ import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faUndo, faFilter, faPaw, faUser, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
 function calculateAge(birthDate) {
-    if (!birthDate) return "N/A";
-    const today = new Date();
-    const birth = new Date(birthDate);
-    const diffTime = today - birth;
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    if (diffDays < 30) return `${diffDays} D`;
-    let years = today.getFullYear() - birth.getFullYear();
-    let months = (today.getMonth() + 12 * years) - birth.getMonth();
-    if (months < 12) return `${months} M`;
-    if (today.getMonth() < birth.getMonth() || 
-       (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) {
-        years--;
-    }
-    return `${years} Y`;
-}
+        if (!birthDate) return "N/A";
+        const birth = new Date(birthDate);
+        const now = new Date();
+        let years = now.getFullYear() - birth.getFullYear();
+        let months = now.getMonth() - birth.getMonth();
+        let days = now.getDate() - birth.getDate();
+        if (days < 0) {
+            months -= 1;
+        }
+        if (months < 0) {
+            years -= 1;
+            months += 12;
+        }
+        if (years >= 1) {
+            return `${years} Year${years === 1 ? '' : 's'}`;
+        } else if (months >= 1) {
+            return `${months} Month${months === 1 ? '' : 's'}`;
+        } else {
+            const diffTime = now - birth;
+            const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const displayDays = totalDays < 0 ? 0 : totalDays;
+            return `${displayDays} Day${displayDays === 1 ? '' : 's'}`;
+        }
+    };
 export default async function AdvancedSearch({ searchParams }) {
     const params = await searchParams;
     const supabase = await createClient();
