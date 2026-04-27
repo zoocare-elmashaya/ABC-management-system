@@ -9,16 +9,25 @@ export default function AnimalManager({ animals, records }) {
         if (!birthDate) return "N/A";
         const birth = new Date(birthDate);
         const now = new Date();
-        const diffTime = Math.abs(now - birth);
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        const diffMonths = Math.floor(diffDays / 30.44);
-        const diffYears = Math.floor(diffDays / 365.25);
-        if (diffDays < 30) {
-            return `${diffDays} Day${diffDays === 1 ? '' : 's'}`;
-        } else if (diffMonths < 12) {
-            return `${diffMonths} Month${diffMonths === 1 ? '' : 's'}`;
+        let years = now.getFullYear() - birth.getFullYear();
+        let months = now.getMonth() - birth.getMonth();
+        let days = now.getDate() - birth.getDate();
+        if (days < 0) {
+            months -= 1;
+        }
+        if (months < 0) {
+            years -= 1;
+            months += 12;
+        }
+        if (years >= 1) {
+            return `${years} Year${years === 1 ? '' : 's'}`;
+        } else if (months >= 1) {
+            return `${months} Month${months === 1 ? '' : 's'}`;
         } else {
-            return `${diffYears} Year${diffYears === 1 ? '' : 's'}`;
+            const diffTime = now - birth;
+            const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const displayDays = totalDays < 0 ? 0 : totalDays;
+            return `${displayDays} Day${displayDays === 1 ? '' : 's'}`;
         }
     };
     const animalABCHistory = records
