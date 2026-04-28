@@ -1,13 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faXmark, faSyringe, faSave, faUserPlus, faPaw, faCheckCircle, faInfoCircle, faSpinner, faCalendarPlus, faTrash 
-} from "@fortawesome/free-solid-svg-icons";
+import { faXmark, faSyringe, faSave, faPaw, faCheckCircle, faInfoCircle, faSpinner, faCalendarPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import supabase from "../lib/supabaseClient";
 const getTodayStr = () => new Date().toISOString().split('T')[0];
 const INITIAL_FORM_STATE = {
-    ownerPhone: "",
-    ownerName: "",
     animalName: "",
     animalType: "canine",
     animalSex: "male",
@@ -18,9 +15,8 @@ const INITIAL_FORM_STATE = {
         { productType: "Vaccine", productName: "", scheduleValue: "", scheduleUnit: "months", id: Date.now() }
     ]
 };
-export default function NewRecordModal({ isOpen, onClose }) {
+export default function NewRecordModal({ isOpen, onClose, ownerId }) {
     const [formData, setFormData] = useState(INITIAL_FORM_STATE);
-    const [isNewOwner, setIsNewOwner] = useState(true);
     const [isNewAnimal, setIsNewAnimal] = useState(true);
     const [productsData, setProductsData] = useState([]); 
     const [isSaving, setIsSaving] = useState(false);
@@ -45,9 +41,9 @@ export default function NewRecordModal({ isOpen, onClose }) {
         try { return date.toISOString().split('T')[0]; } catch (e) { return null; }
     };
     const calculateBirthDate = (value, unit) => {
+        const date = new Date();
         const num = parseInt(value);
         if (isNaN(num) || num === 0) return null;
-        const date = new Date();
         if (unit === "days") date.setDate(date.getDate() - num);
         else if (unit === "months") date.setMonth(date.getMonth() - num);
         else if (unit === "years") date.setFullYear(date.getFullYear() - num);
@@ -82,67 +78,49 @@ export default function NewRecordModal({ isOpen, onClose }) {
         fetchProducts();
     }, []);
     useEffect(() => {
-        if (!isOpen || formData.ownerPhone.length < 6) {
-            setIsNewOwner(true);
+        const name = formData.animalName.trim();
+        if (!isOpen || !ownerId || !name) {
+            setIsNewAnimal(true);
+            setFormData(prev => ({
+                ...prev,
+                animalAgeValue: ""
+            }));
             return;
         }
-        const lookupPatient = async () => {
-            const { data: owner } = await supabase.from("owners").select("*").eq("phone", formData.ownerPhone).maybeSingle();
-            if (owner) {
-                setIsNewOwner(false);
-                setFormData(prev => ({ ...prev, ownerName: owner.name }));
-                const searchName = formData.animalName.trim();
-                if (!searchName) {
-                    setIsNewAnimal(true);
-                    setFormData(prev => ({
-                        ...prev,
-                        animalAgeValue: ""
-                    }));
-                    return;
-                }
-                const { data: animal } = await supabase.from("animals")
-                    .select("*")
-                    .eq("owner_id", owner.phone)
-                    .ilike("name", searchName)
-                    .maybeSingle();
-                if (animal) {
-                    setIsNewAnimal(false);
-                    const age = calculateAgeFromBirthDate(animal.birth_date);
-                    setFormData(prev => ({ 
-                        ...prev, 
-                        animalType: animal.species, 
-                        animalSex: animal.gender, 
-                        animalAgeValue: age.value, 
-                        animalAgeUnit: age.unit 
-                    }));
-                } else {
-                    setIsNewAnimal(true);
-                }
+        const lookupAnimal = async () => {
+            const { data: animal } = await supabase.from("animals")
+                .select("*")
+                .eq("owner_id", ownerId)
+                .ilike("name", name)
+                .maybeSingle();
+            if (animal) {
+                setIsNewAnimal(false);
+                const age = calculateAgeFromBirthDate(animal.birth_date);
+                setFormData(prev => ({ 
+                    ...prev, 
+                    animalType: animal.species, 
+                    animalSex: animal.gender, 
+                    animalAgeValue: age.value, 
+                    animalAgeUnit: age.unit 
+                }));
             } else {
-                setIsNewOwner(true);
                 setIsNewAnimal(true);
             }
         };
-        const debounce = setTimeout(lookupPatient, 400);
+        const debounce = setTimeout(lookupAnimal, 400);
         return () => clearTimeout(debounce);
-    }, [formData.ownerPhone, formData.animalName, isOpen]);
+    }, [formData.animalName, isOpen, ownerId]);
     const handleSave = async (e) => {
         e.preventDefault();
+        if (!ownerId) return alert("Missing Owner Context");
         setIsSaving(true);
         const finalRecordDate = formData.recordDate || getTodayStr();
         const finalAnimalName = formData.animalName.trim() || "Unknown";
         try {
-            if (isNewOwner) {
-                const { error: ownerErr } = await supabase.from("owners").upsert([{ 
-                    phone: formData.ownerPhone, 
-                    name: formData.ownerName 
-                }]);
-                if (ownerErr) throw new Error("Owner Save Failed: " + ownerErr.message);
-            }
             let animalId;
             const { data: existingAnimal } = await supabase.from("animals")
                 .select("id")
-                .eq("owner_id", formData.ownerPhone)
+                .eq("owner_id", ownerId)
                 .ilike("name", finalAnimalName)
                 .maybeSingle();
             if (existingAnimal) {
@@ -152,7 +130,7 @@ export default function NewRecordModal({ isOpen, onClose }) {
                     name: finalAnimalName, 
                     species: formData.animalType, 
                     gender: formData.animalSex, 
-                    owner_id: formData.ownerPhone,
+                    owner_id: ownerId,
                     birth_date: calculateBirthDate(formData.animalAgeValue, formData.animalAgeUnit)
                 }]).select().single();
                 if (animalErr || !newAnimal) throw new Error("Failed to register animal.");
@@ -160,9 +138,9 @@ export default function NewRecordModal({ isOpen, onClose }) {
             }
             const recordsToInsert = formData.recordEntries.map(entry => {
                 const selectedProd = productsData.find(p => p.name === entry.productName);
-                if (!selectedProd) throw new Error(`Select a product for all treatments.`);
+                if (!selectedProd) throw new Error(`Please select a product for all treatments.`);
                 return {
-                    owner_id: formData.ownerPhone, 
+                    owner_id: ownerId, 
                     animal_id: animalId, 
                     product_id: selectedProd.id,
                     date: finalRecordDate, 
@@ -172,6 +150,7 @@ export default function NewRecordModal({ isOpen, onClose }) {
             });
             const { error: recordError } = await supabase.from("records").insert(recordsToInsert);
             if (recordError) throw recordError;
+            
             setFormData(INITIAL_FORM_STATE);
             onClose();
         } catch (err) { 
@@ -193,7 +172,7 @@ export default function NewRecordModal({ isOpen, onClose }) {
                         <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white text-xl shadow-lg shadow-primary/20">
                             <FontAwesomeIcon icon={isSaving ? faSpinner : faSyringe} className={isSaving ? "animate-spin" : ""} />
                         </div>
-                        <h2 className="text-2xl font-black text-secondary uppercase italic">New Record Entry</h2>
+                        <h2 className="text-2xl font-black text-secondary uppercase italic">Clinic Session</h2>
                     </div>
                     <button onClick={onClose} className="w-10 h-10 rounded-full bg-slate-50 text-slate-400 hover:text-red-500 transition-all"><FontAwesomeIcon icon={faXmark} /></button>
                 </div>
@@ -201,30 +180,7 @@ export default function NewRecordModal({ isOpen, onClose }) {
                     <form onSubmit={handleSave} className="max-w-3xl mx-auto space-y-10 pb-20">
                         <section className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 space-y-6">
                             <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-2">
-                                <FontAwesomeIcon icon={faUserPlus} /> Owner Information
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className={labelClass}>Phone Number</label>
-                                    <div className="relative">
-                                        <input required type="text" value={formData.ownerPhone} className={inputClass} onChange={(e) => setFormData({...formData, ownerPhone: e.target.value})} />
-                                        {formData.ownerPhone.length > 5 && (
-                                            <div className={`absolute right-4 top-3.5 text-[10px] font-black uppercase flex items-center gap-1 ${!isNewOwner ? 'text-green-500' : 'text-orange-500'}`}>
-                                                <FontAwesomeIcon icon={!isNewOwner ? faCheckCircle : faInfoCircle} /> 
-                                                {!isNewOwner ? 'Found' : 'New'}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className={labelClass}>Owner Name</label>
-                                    <input required type="text" value={formData.ownerName} disabled={!isNewOwner} className={`${inputClass} ${!isNewOwner ? disabledClass : ''}`} onChange={(e) => setFormData({...formData, ownerName: e.target.value})} />
-                                </div>
-                            </div>
-                        </section>
-                        <section className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 space-y-6">
-                            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-2">
-                                <FontAwesomeIcon icon={faPaw} /> Pet Details
+                                <FontAwesomeIcon icon={faPaw} /> Pet Information
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
                                 <div className="md:col-span-2 relative">
@@ -234,7 +190,7 @@ export default function NewRecordModal({ isOpen, onClose }) {
                                         {formData.animalName.trim().length > 0 && (
                                             <div className={`absolute right-4 top-3.5 text-[10px] font-black uppercase flex items-center gap-1 ${!isNewAnimal ? 'text-green-500' : 'text-orange-500'}`}>
                                                 <FontAwesomeIcon icon={!isNewAnimal ? faCheckCircle : faInfoCircle} />
-                                                {!isNewAnimal ? 'Known' : 'New'}
+                                                {!isNewAnimal ? 'Found' : 'New'}
                                             </div>
                                         )}
                                     </div>
@@ -256,7 +212,7 @@ export default function NewRecordModal({ isOpen, onClose }) {
                                 <div className="md:col-span-2 flex gap-2">
                                     <div className="flex-1">
                                         <label className={labelClass}>Age</label>
-                                        <input disabled={!isNewAnimal || !formData.animalName.trim()} type="number" className={`${inputClass} ${(!isNewAnimal || !formData.animalName.trim()) ? disabledClass : ''}`} value={formData.animalAgeValue} onChange={(e) => setFormData({...formData, animalAgeValue: e.target.value})} />
+                                        <input type="number" disabled={!isNewAnimal || !formData.animalName.trim()}  className={`${inputClass} ${(!isNewAnimal || !formData.animalName.trim()) ? disabledClass : ''}`} value={formData.animalAgeValue} onChange={(e) => setFormData({...formData, animalAgeValue: e.target.value})} />
                                     </div>
                                     <div className="w-24">
                                         <label className={labelClass}>Unit</label>
@@ -332,6 +288,7 @@ export default function NewRecordModal({ isOpen, onClose }) {
                                 </div>
                             ))}
                         </div>
+
                         <div className="pt-6 flex justify-end gap-6 items-center">
                             <button type="button" onClick={onClose} className="font-black text-[11px] text-slate-400 uppercase tracking-widest">Discard</button>
                             <button type="submit" disabled={isSaving} className="bg-primary text-white px-12 py-5 rounded-2xl font-black text-sm hover:brightness-110 transition-all shadow-2xl flex items-center gap-3 italic tracking-widest">

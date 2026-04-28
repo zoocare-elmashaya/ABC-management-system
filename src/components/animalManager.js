@@ -35,9 +35,10 @@ export default function AnimalManager({ animals, records }) {
         .map(rec => {
             return {
                 ...rec,
-                name: rec.products?.name || "Unknown Treatment",
+                name: rec.products?.name || "Unknown Product",
                 type: rec.products?.type || "Other",
-                date: rec.due_date 
+                date: rec.date,
+                due: rec.due_date
             };
         }).reverse();
     const getRecordsByType = (type) => 
@@ -123,7 +124,7 @@ export default function AnimalManager({ animals, records }) {
                                                                     {rec.date}
                                                                 </td>
                                                                 <td className="px-4 md:px-6 py-3 md:py-4 text-center text-[10px] text-red-500 font-mono">
-                                                                    {rec.due_date}
+                                                                    {rec.due}
                                                                 </td>
                                                                 <td className="px-4 md:px-6 py-3 md:py-4 text-right">
                                                                     <div className={`inline-block w-2.5 h-2.5 rounded-full border-2 ${rec.send ? 'bg-primary border-primary/20' : 'bg-white border-slate-200'}`}></div>
