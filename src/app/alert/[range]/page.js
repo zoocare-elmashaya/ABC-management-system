@@ -201,8 +201,10 @@ export default async function AlertPage({ params }) {
                         if (phone.startsWith("0")) {
                         phone = "20" + phone.slice(1);
                         }
-                        const whatsappMessage = `مساء الخير 👋\nبنفكرك بمعاد تطعيم *${productType}* الخاص ب *${rec.animals?.name}* ${animalType} ${animalGender}\n📅 يوم ${dayInArabic} الموافق ${formattedDate}\n📍 عنوانا: زوو كير فرع المشايه, خلف فندق مارشال الجزيرة, شارع الامام الشافعي.\nفي انتظاركم ❤️`;
-                        const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(`${whatsappMessage}`)}`;
+                        const rawName = rec.animals?.name;
+                        const isNameKnown = rawName && rawName.toLowerCase() !== "unknown";
+                        const animalDisplayName = isNameKnown ? ` *${rawName}*` : "";
+                        const whatsappMessage = `مساء الخير 👋\nبنفكرك بمعاد تطعيم *${productType}*${animalDisplayName} ${animalType} ${animalGender}\n📅 يوم ${dayInArabic} الموافق ${formattedDate}\n📍 عنوانا: ززو كير فرع المشايه, خلف فندق مارشال الجزيرة, شارع الامام الشافعي.\nفي انتظاركم ❤️`;                        const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(`${whatsappMessage}`)}`;
                     return (
                         <div key={rec.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                             <div className={`px-4 py-2 flex justify-between items-center ${status.iconBg}`}>
