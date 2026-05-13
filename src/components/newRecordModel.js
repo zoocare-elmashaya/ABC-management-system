@@ -207,7 +207,7 @@ export default function NewRecordModal({ isOpen, onClose }) {
                                 <div>
                                     <label className={labelClass}>Phone Number</label>
                                     <div className="relative">
-                                        <input required type="text" value={formData.ownerPhone} className={inputClass} onChange={(e) => setFormData({...formData, ownerPhone: e.target.value})} />
+                                        <input required inputMode="numeric" pattern="[0-9]*" type="text" value={formData.ownerPhone} className={inputClass} onChange={(e) => setFormData({...formData, ownerPhone: e.target.value.replace(/\D/g, '')})} />
                                         {formData.ownerPhone.length > 5 && (
                                             <div className={`absolute right-4 top-3.5 text-[10px] font-black uppercase flex items-center gap-1 ${!isNewOwner ? 'text-green-500' : 'text-orange-500'}`}>
                                                 <FontAwesomeIcon icon={!isNewOwner ? faCheckCircle : faInfoCircle} /> 

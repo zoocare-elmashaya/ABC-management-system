@@ -20,9 +20,9 @@ export default function AlertBox({ className }) {
                 <FontAwesomeIcon icon={faHourglassHalf} className="w-4 text-orange-400 group-hover:text-white" />
                 Next 7 Days
             </Link>
-            <Link href="/alert/3days" className={itemClasses}>
+            <Link href="/alert/tomorrow" className={itemClasses}>
                 <FontAwesomeIcon icon={faTriangleExclamation} className="w-4 text-red-500 group-hover:text-white" />
-                Next 3 Days
+                    Next Day
             </Link>
         </div>
     );

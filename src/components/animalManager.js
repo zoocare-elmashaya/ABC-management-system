@@ -53,7 +53,7 @@ export default function AnimalManager({ animals, records }) {
                     {animals.map((animal) => (
                         <button key={animal.id} onClick={() => setSelectedAnimalId(animal.id)} className={`flex items-center gap-3 md:gap-4 px-5 py-3 md:px-6 md:py-4 rounded-2xl border-2 transition-all duration-300 snap-start shrink-0 ${selectedAnimalId === animal.id ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10' : 'border-slate-100 bg-white hover:border-slate-300 shadow-sm'}`}>
                             <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center text-lg md:text-xl ${selectedAnimalId === animal.id ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>
-                                <FontAwesomeIcon icon={animal.species?.toLowerCase() === 'dog' ? faDog : faCat} />
+                                <FontAwesomeIcon icon={animal.species?.toLowerCase() === 'canine' ? faDog : faCat} />
                             </div>
                             <div className="text-left">
                                 <p className={`text-sm md:text-base font-black uppercase tracking-tight italic ${selectedAnimalId === animal.id ? 'text-secondary' : 'text-slate-600'}`}>

@@ -41,8 +41,8 @@ export default async function AlertPage({ params }) {
             title = "Next 7 Days";
             break;
         default:
-            thresholdDate.setDate(today.getDate() + 4);
-            title = "Next 3 Days";
+            thresholdDate.setDate(today.getDate() + 2);
+            title = "Next Day";
     }
     const startDateStr = today.toISOString().split('T')[0];
     const endDateStr = thresholdDate.toISOString().split('T')[0];
@@ -52,7 +52,7 @@ export default async function AlertPage({ params }) {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         if (diffDays >= 16) return { label: "Upcoming", iconBg: "bg-blue-50", text: "text-blue-500", subText: "text-blue-400" };
         if (diffDays >= 9) return { label: "Scheduled", iconBg: "bg-purple-50", text: "text-purple-500", subText: "text-purple-400" };
-        if (diffDays >= 5) return { label: "Due Soon", iconBg: "bg-orange-50", text: "text-orange-500", subText: "text-orange-400" };
+        if (diffDays >= 3) return { label: "Due Soon", iconBg: "bg-orange-50", text: "text-orange-500", subText: "text-orange-400" };
         return { label: "Urgent", iconBg: "bg-red-50", text: "text-red-500", subText: "text-red-400" };
     };
     const { data: records, error } = await supabase
@@ -185,7 +185,7 @@ export default async function AlertPage({ params }) {
                         Rabies: "السعار",
                         Ectoparasites: "الحشرات",
                         };
-                        const productType =                            productTypeMap[rec.products?.type] || rec.products?.type;
+                        const productType = productTypeMap[rec.products?.type] || rec.products?.type;
                         const dayInArabic = new Date(rec.due_date).toLocaleDateString("ar-EG", {
                         weekday: "long",
                         });
