@@ -40,9 +40,13 @@ export default async function AlertPage({ params }) {
             thresholdDate.setDate(today.getDate() + 8);
             title = "Next 7 Days";
             break;
-        default:
+        case "tomorrow":
             thresholdDate.setDate(today.getDate() + 1);
             title = "Tomorrow";
+            break;
+        default:
+            thresholdDate.setDate(today.getDate() - 1);
+            title = "Missed";
     }
     const startDateStr = today.toISOString().split('T')[0];
     const endDateStr = thresholdDate.toISOString().split('T')[0];
@@ -50,6 +54,7 @@ export default async function AlertPage({ params }) {
         const dueDate = new Date(dueDateStr);
         const diffTime = dueDate.getTime() - today.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays < 0) return { label: "Missed", iconBg: "bg-gray-100", text: "text-gray-500", subText: "text-gray-400" };
         if (diffDays >= 16) return { label: "Upcoming", iconBg: "bg-blue-50", text: "text-blue-500", subText: "text-blue-400" };
         if (diffDays >= 9) return { label: "Scheduled", iconBg: "bg-purple-50", text: "text-purple-500", subText: "text-purple-400" };
         if (diffDays >= 2) return { label: "Due Soon", iconBg: "bg-orange-50", text: "text-orange-500", subText: "text-orange-400" };

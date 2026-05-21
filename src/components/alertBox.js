@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarDays, faClock, faHourglassHalf, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarDays, faClock, faHourglassHalf, faTriangleExclamation, faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 export default function AlertBox({ className }) {
     const itemClasses = "flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-gray-600 hover:bg-primary hover:text-white transition-all duration-200 border-b border-slate-100 last:border-0";
     return (
@@ -23,6 +23,10 @@ export default function AlertBox({ className }) {
             <Link href="/alert/tomorrow" className={itemClasses}>
                 <FontAwesomeIcon icon={faTriangleExclamation} className="w-4 text-red-500 group-hover:text-white" />
                     Tomorrow
+            </Link>
+            <Link href="/alert/missed" className={itemClasses}>
+                <FontAwesomeIcon icon={faCircleXmark} className="w-4 text-gray-500 group-hover:text-white" />
+                    Missed
             </Link>
         </div>
     );
