@@ -1,13 +1,10 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
-
-// Note: Next.js 15+ standardizes this to 'edge', but you can keep 'experimental-edge' if your Cloudflare setup specifically requires it.
-export const runtime = 'edge'; 
+export const runtime = 'experimental-edge';
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl
 
-  // 1. BYPASS CRON ROUTE: Let the daily background task hit the API without checking for a logged-in user
   if (pathname.startsWith('/api/cron/')) {
     return NextResponse.next()
   }
