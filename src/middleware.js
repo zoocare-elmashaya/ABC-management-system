@@ -1,6 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
-export const runtime = 'experimental-edge';
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl
