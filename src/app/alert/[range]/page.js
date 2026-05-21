@@ -45,7 +45,7 @@ export default async function AlertPage({ params }) {
             title = "Tomorrow";
             break;
         default:
-            thresholdDate.setDate(today.getDate() - 1);
+            thresholdDate.setDate(new Date(0));
             title = "Missed";
     }
     const startDateStr = today.toISOString().split('T')[0];
