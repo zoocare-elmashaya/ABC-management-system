@@ -27,6 +27,7 @@ export default async function AlertPage({ params }) {
     today.setHours(0, 0, 0, 0);
     let thresholdDate = new Date(today);
     let title = "";
+    let isMissedRange = false;
     switch (range) {
         case "month":
             thresholdDate.setDate(today.getDate() + 31);
@@ -45,8 +46,9 @@ export default async function AlertPage({ params }) {
             title = "Tomorrow";
             break;
         default:
-            thresholdDate.setDate(new Date(0));
+            thresholdDate.setDate(today.getDate() - 1);
             title = "Missed";
+            isMissedRange = true;
     }
     const startDateStr = today.toISOString().split('T')[0];
     const endDateStr = thresholdDate.toISOString().split('T')[0];
@@ -60,14 +62,23 @@ export default async function AlertPage({ params }) {
         if (diffDays >= 2) return { label: "Due Soon", iconBg: "bg-orange-50", text: "text-orange-500", subText: "text-orange-400" };
         return { label: "Urgent", iconBg: "bg-red-50", text: "text-red-500", subText: "text-red-400" };
     };
-    const { data: records, error } = await supabase
-        .from("records")
-        .select(`id,due_date,send,owners!inner(name, phone),animals!inner(name, birth_date,gender,species),products!inner(name, type)`)
-        .eq("send", false)
-        .gte("due_date", startDateStr)
-        .lte("due_date", endDateStr)
-        .order("due_date", { ascending: true });
-    if (error) console.error("Alert Fetch Error:", error.message);
+    let query = supabase
+            .from("records")
+            .select(`id,due_date,send,owners!inner(name, phone),animals!inner(name, birth_date,gender,species),products!inner(name, type)`)
+            .eq("send", false);
+        if (isMissedRange) {
+            query = query
+                .lte("due_date", endDateStr)
+                .order("due_date", { ascending: false });
+        } else {
+            query = query
+                .gte("due_date", startDateStr)
+                .lte("due_date", endDateStr)
+                .order("due_date", { ascending: true });
+        }
+        const { data: records, error } = await query;
+
+        if (error) console.error("Alert Fetch Error:", error.message);
     const alertRecords = records || [];
     return (
         <main className="w-full min-h-screen bg-slate-50 py-10 px-[5%]">
