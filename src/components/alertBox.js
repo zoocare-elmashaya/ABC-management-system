@@ -22,7 +22,7 @@ export default function AlertBox({ className }) {
             </Link>
             <Link href="/alert/tomorrow" className={itemClasses}>
                 <FontAwesomeIcon icon={faTriangleExclamation} className="w-4 text-red-500 group-hover:text-white" />
-                    Next Day
+                    Tomorrow
             </Link>
         </div>
     );

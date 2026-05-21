@@ -42,7 +42,7 @@ export default async function AlertPage({ params }) {
             break;
         default:
             thresholdDate.setDate(today.getDate() + 2);
-            title = "Next 3 Days";
+            title = "Tomorrow";
     }
     const startDateStr = today.toISOString().split('T')[0];
     const endDateStr = thresholdDate.toISOString().split('T')[0];
